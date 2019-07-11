@@ -1,6 +1,8 @@
 import React, { Fragment, useContext, useEffect } from 'react';
 import { Store } from './Store';
 
+const EpisodesList = React.lazy(() => import('./EpisodesList'));
+
 export default function App() {
     const { state, dispatch } = useContext(Store);
 
@@ -29,42 +31,32 @@ export default function App() {
         return dispatch(dispatchObj);
     };
 
+    const props = {
+        episodes: state.episodes,
+        toggleFavAction: toggleFavAction,
+        favourites: state.favourites
+    };
+
     useEffect(() => {
         state.episodes.length === 0 && fetchDataAction();
     });
 
     return (
-        <Fragment>
-            {console.log(state, dispatch)}
-            <div>
-                <header className='header'>
-                    <h1>Rick and Morty</h1>
-                    <p>Pick your favourite episodes</p>
-                    <div>Favourite(s) {state.favourites.length}</div>
-                </header>
 
-                <section className='episode-layout'>
-                    {state.episodes.map(episode => {
-                        return (
-                            <section key={episode.id}>
-                                <img
-                                    src={episode.image && episode.image.medium}
-                                    alt={`Rick and Morty ${episode.name}`}
-                                />
-                                <div>{episode.name}</div>
-                                <section style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <div>
-                                        Season: {episode.season} Number: {episode.number}
-                                    </div>
-                                    <button type='button' onClick={() => toggleFavAction(episode)}>
-                                        {state.favourites.find(fav => fav.id === episode.id) ? 'Unfav' : 'Fav'}
-                                    </button>
-                                </section>
-                            </section>
-                        );
-                    })}
-                </section>
-            </div>
+        <Fragment>
+            <React.Suspense fallback={<div>Loading...</div>}>
+                {console.log(state, dispatch)}
+                <div>
+                    <header className='header'>
+                        <h1>Rick and Morty</h1>
+                        <p>Pick your favourite episodes</p>
+                        <div>Favourite(s) {state.favourites.length}</div>
+                    </header>
+                    <section className='episode-layout'>
+                        <EpisodesList {...props} />
+                    </section>
+                </div>
+            </React.Suspense>
         </Fragment>
     );
 }
